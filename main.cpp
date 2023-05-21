@@ -26,7 +26,7 @@ int main()
                 {
                     if (hex->getGlobalBounds().contains({float(event.mouseButton.x), float(event.mouseButton.y)}))
                     {
-                        hex->setFillColor(sf::Color::Green);
+                        window.selectHexagon(hex);
                     }
                 }
             }

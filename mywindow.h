@@ -7,9 +7,38 @@ const float HEX_RADIUS = HEX_SIZE * 0.866f;
 const float HEX_VERTICAL_SPACING = HEX_SIZE * 2.0f;
 const float HEX_HORIZONTAL_SPACING = HEX_RADIUS * 2.0f;
 
+enum Player
+{
+    Player1,
+    Player2
+};
+
 class myWindow : public sf::RenderWindow
 {
 public:
+    Player player = Player::Player1;
+    sf::CircleShape *selectedHexagon = nullptr;
+
+    void selectHexagon(sf::CircleShape *hexagon)
+    {
+        if (hexagon->getFillColor() == sf::Color::White)
+        {
+            if (player == Player::Player1)
+            {
+                hexagon->setFillColor(sf::Color::Red);
+                player = Player::Player2;
+            }
+            else
+            {
+                hexagon->setFillColor(sf::Color::Blue);
+                player = Player::Player1;
+            }
+        }
+        else
+        {
+            hexagon->setFillColor(sf::Color::White);
+        }
+    }
     std::vector<sf::CircleShape *> hexagons{};
     using sf::RenderWindow::RenderWindow;
     // destructor
@@ -31,6 +60,7 @@ public:
 
                 float x = HEX_HORIZONTAL_SPACING * (i + 1);
                 float y = HEX_VERTICAL_SPACING * (j + 1);
+
                 if (i % 2 != 0)
                 {
                     y += HEX_VERTICAL_SPACING / 2.0f;
@@ -38,8 +68,17 @@ public:
                 sf::CircleShape *hexagon = new sf::CircleShape(HEX_SIZE, 6);
                 hexagon->setOrigin(HEX_SIZE, HEX_SIZE + 50.0f);
                 hexagon->setPosition(sf::Vector2f(x, y));
-                hexagon->setFillColor(sf::Color::Red);
+                hexagon->setFillColor(sf::Color::White);
+                hexagon->setOutlineColor(sf::Color (255 , 255 , 0));
                 hexagon->rotate(90.0f);
+                if (i == 4 && j == 0 || i == 0 && j == 6 || i == BOARD_SIZE - 1 && j == 6)
+                {
+                    hexagon->setFillColor(sf::Color::Red);
+                }
+                else if (i == 4 && j == 8 || i == 0 && j == 2 || i == BOARD_SIZE - 1 && j == 2)
+                {
+                    hexagon->setFillColor(sf::Color::Blue);
+                }
                 draw(*hexagon);
                 hexagons.push_back(hexagon);
             }
@@ -52,4 +91,6 @@ public:
             draw(*hex);
         }
     }
+
+
 };
