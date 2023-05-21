@@ -3,6 +3,22 @@
 #include "Hexagon.h"
 #include <cmath>
 #include <iostream>
+#include "Bot.h"
+
+enum Player
+{
+    Player1,
+    Player2
+};
+
+enum GameMode
+{
+    SinglePlayer,
+    MultiPlayer
+};
+
+const sf::Color P1_COLOR = sf::Color::Red;
+const sf::Color P2_COLOR = sf::Color::Blue;
 
 const int BOARD_SIZE = 9;
 
@@ -13,10 +29,15 @@ const float HEX_HORIZONTAL_SPACING = HEX_RADIUS * 2.0f;
 class myWindow : public sf::RenderWindow
 {
 myHexagon *selectedHexagon = nullptr;
+Bot bot;
+GameMode mode = GameMode::SinglePlayer;
 public:
     Player player = Player::Player1;
     std::vector<myHexagon *> hexagons{};
-    using sf::RenderWindow::RenderWindow;
+    myWindow(sf::VideoMode mode, const sf::String &title, sf::Uint32 style = sf::Style::Default,
+             const sf::ContextSettings &settings = sf::ContextSettings()) : RenderWindow(mode, title, style, settings), bot(this)
+    {
+    }
     // destructor
     ~myWindow()
     {
@@ -29,42 +50,7 @@ public:
             delete selectedHexagon;
         }
     }
-    void innitBoard()
-    {
-        for (int i = 0; i < BOARD_SIZE; ++i)
-        {
-            for (int j = 0; j < BOARD_SIZE; ++j)
-            {
-                if (((i == 0 || i == BOARD_SIZE - 1) && (j == 0 || j == 1 || j == BOARD_SIZE - 1 || j == BOARD_SIZE - 2)) || ((i == 1 || i == BOARD_SIZE - 2) && (j == 0 || j == BOARD_SIZE - 1 || j == BOARD_SIZE - 2)) || ((i == 2 || i == BOARD_SIZE - 3) && (j == 0 || j == BOARD_SIZE - 1)) || ((i == 3 || i == BOARD_SIZE - 4) && (j == BOARD_SIZE - 1)) || (i == 4 && j == 3) || ((i == 3 || i == 5) && j == 4))
-                    continue;
-
-                float x = HEX_HORIZONTAL_SPACING * (i + 1);
-                float y = HEX_VERTICAL_SPACING * (j + 1);
-
-                if (i % 2 != 0)
-                {
-                    y += HEX_VERTICAL_SPACING / 2.0f;
-                }
-                // myHexagon *hexagon = new myHexagon(HEX_SIZE, 6);
-                // hexagon->setOrigin(HEX_SIZE, HEX_SIZE + 50.0f);
-                // hexagon->setPosition(sf::Vector2f(x, y));
-                // hexagon->setFillColor(sf::Color::White);
-                // hexagon->setOutlineColor(sf::Color (255 , 255 , 0));
-                // hexagon->rotate(90.0f);
-                myHexagon *hexagon = new myHexagon(sf::Vector2f(x, y), sf::Color::White);
-                if ((i == 4 && j == 0) || (i == 0 && j == 6) || (i == BOARD_SIZE - 1 && j == 6))
-                {
-                    hexagon->setFillColor(sf::Color::Red);
-                }
-                else if ((i == 4 && j == 8) || (i == 0 && j == 2) || (i == BOARD_SIZE - 1 && j == 2))
-                {
-                    hexagon->setFillColor(sf::Color::Blue);
-                }
-                draw(*hexagon);
-                hexagons.push_back(hexagon);
-            }
-        }
-    }
+    void innitBoard();
     void redrawBoard()
     {
         for (auto hex : hexagons)
@@ -73,23 +59,19 @@ public:
         }
     }
 
-    std::vector<myHexagon*> getNeighbours(myHexagon* center)
+    void handleClick(sf::Event event)
     {
-        std::vector<myHexagon*> neighbours = {};
         for (auto hex : hexagons)
         {
-            if (hex == center)
+            if (hex->getGlobalBounds().contains({float(event.mouseButton.x), float(event.mouseButton.y)}))
             {
-                continue;
-            }
-            // check distance between center and hex
-            if (distance(center,hex) < HEX_SIZE * 2.2f)
-            {
-                neighbours.push_back(hex);
+                selectHexagon(hex);
             }
         }
-        return neighbours;
     }
+
+    std::vector<myHexagon*> getNeighbours(myHexagon* center);
+    std::vector<myHexagon*> getPlayerHexagons(Player player);
 
 
     void moveHexagon(myHexagon *start, myHexagon *end) {
@@ -130,20 +112,20 @@ public:
                 moveHexagon(selectedHexagon, hexagon);
                 // change the player
                 player = (player == Player::Player1) ? Player::Player2 : Player::Player1;
+                if (mode == GameMode::SinglePlayer)
+                {
+                    // call the bot
+                    std::pair<myHexagon, myHexagon> bestMove = bot.getBestMove();
+                    moveHexagon(&bestMove.first, &bestMove.second);
+                    // change the player
+                    player = (player == Player::Player1) ? Player::Player2 : Player::Player1;
+                }
             }
         }
-        
-        // set the selected hexagon to the hexagon that was clicked
-        selectedHexagon = nullptr;
-        // if the player matches the color of the hexagon
-        // create an outline around the hexagon
-        if ((hexagon->getFillColor() == P1_COLOR and player == Player::Player1) ||
-            (hexagon->getFillColor() == P2_COLOR and player == Player::Player2))
-        {
-            selectedHexagon = hexagon;
-            hexagon->setOutlineThickness(5);
-        }
+        switchOutline(hexagon);
     }
+
+    void switchOutline(myHexagon *hexagon);
 
     myHexagon *getSelectedHexagon() const
     {
