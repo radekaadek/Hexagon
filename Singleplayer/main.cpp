@@ -5,7 +5,7 @@
 
 int main()
 {
-    myWindow window(sf::VideoMode({1000, 800}), "Window");
+    myWindow window(sf::VideoMode({1000, 700}), "Hexxagon");
     sf::Event event;
     window.innitBoard();
     while (window.isOpen())
@@ -21,14 +21,8 @@ int main()
             }
             else if (event.type == sf::Event::MouseButtonPressed)
             {
-                // change the color of the hexagon
-                for (auto hex : window.hexagons)
-                {
-                    if (hex->getGlobalBounds().contains({float(event.mouseButton.x), float(event.mouseButton.y)}))
-                    {
-                        window.selectHexagon(hex);
-                    }
-                }
+                sf::Vector2f mousePosition = window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y});
+                window.handleClick(mousePosition);
             }
         }
         window.display();

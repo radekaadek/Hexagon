@@ -25,10 +25,7 @@ public:
         this->setOutlineColor(sf::Color (255 , 255 , 0));
         this->rotate(90.0f);
     }
-
+    static float distance (const myHexagon* a, const myHexagon* b);
 };
-float distance (const myHexagon* a, const myHexagon* b)
-{
-    return sqrt(pow(a->getPosition().x - b->getPosition().x, 2) + pow(a->getPosition().y - b->getPosition().y, 2));
-}
+
 

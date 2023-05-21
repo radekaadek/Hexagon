@@ -1,18 +1,25 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 #include "Hexagon.h"
 #include <cmath>
-#include <iostream>
 
 const int BOARD_SIZE = 9;
 
 const float HEX_VERTICAL_SPACING = HEX_SIZE * 2.0f;
 const float HEX_HORIZONTAL_SPACING = HEX_RADIUS * 2.0f;
 
+class Bot;
+
+enum GameMode
+{
+    SinglePlayer,
+    MultiPlayer
+};
+
 
 class myWindow : public sf::RenderWindow
 {
 myHexagon *selectedHexagon = nullptr;
+GameMode mode = GameMode::SinglePlayer;
 public:
     Player player = Player::Player1;
     std::vector<myHexagon *> hexagons{};
@@ -45,12 +52,6 @@ public:
                 {
                     y += HEX_VERTICAL_SPACING / 2.0f;
                 }
-                // myHexagon *hexagon = new myHexagon(HEX_SIZE, 6);
-                // hexagon->setOrigin(HEX_SIZE, HEX_SIZE + 50.0f);
-                // hexagon->setPosition(sf::Vector2f(x, y));
-                // hexagon->setFillColor(sf::Color::White);
-                // hexagon->setOutlineColor(sf::Color (255 , 255 , 0));
-                // hexagon->rotate(90.0f);
                 myHexagon *hexagon = new myHexagon(sf::Vector2f(x, y), sf::Color::White);
                 if ((i == 4 && j == 0) || (i == 0 && j == 6) || (i == BOARD_SIZE - 1 && j == 6))
                 {
@@ -114,6 +115,14 @@ public:
         }
     }
 
+    void handleClick(sf::Vector2f mousePos);
+
+    void botMove()
+    {
+        // std::pair<myHexagon, myHexagon> move = Bot::getBestMove(this);
+        // moveHexagon(&move.first, &move.second);
+    }
+
     void selectHexagon(myHexagon *hexagon)
     {
         for (auto hex : hexagons)
@@ -130,6 +139,10 @@ public:
                 moveHexagon(selectedHexagon, hexagon);
                 // change the player
                 player = (player == Player::Player1) ? Player::Player2 : Player::Player1;
+                if (mode == GameMode::SinglePlayer && player == Player::Player2)
+                {
+                    botMove();
+                }
             }
         }
         
@@ -145,9 +158,18 @@ public:
         }
     }
 
-    myHexagon *getSelectedHexagon() const
+    std::vector<myHexagon *> getPlayerHexagons(Player player)
     {
-        return selectedHexagon;
+        std::vector<myHexagon *> playerHexagons = {};
+        for (auto hex : hexagons)
+        {
+            if ((hex->getFillColor() == P1_COLOR and player == Player::Player1) ||
+                (hex->getFillColor() == P2_COLOR and player == Player::Player2))
+            {
+                playerHexagons.push_back(hex);
+            }
+        }
+        return playerHexagons;
     }
 
 
