@@ -1,7 +1,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <ctime>
-#include "mywindow.h"
+#include "myWindow.h"
 
 int main()
 {
