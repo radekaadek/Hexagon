@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <cmath>
 
 const float HEX_SIZE = 40.0f;
 const float HEX_RADIUS = HEX_SIZE * 0.866f;
@@ -14,10 +15,6 @@ enum Player
 
 class myHexagon : public sf::CircleShape
 {
-private:
-    sf::Vector2f position;
-    sf::Color color;
-    Player player = Player::Player1;
 public:
     // extends the constructor of sf::CircleShape
     myHexagon(const sf::Vector2f &position, const sf::Color &color) : sf::CircleShape(HEX_SIZE, 6)
@@ -28,5 +25,10 @@ public:
         this->setOutlineColor(sf::Color (255 , 255 , 0));
         this->rotate(90.0f);
     }
+
 };
+float distance (const myHexagon* a, const myHexagon* b)
+{
+    return sqrt(pow(a->getPosition().x - b->getPosition().x, 2) + pow(a->getPosition().y - b->getPosition().y, 2));
+}
 
