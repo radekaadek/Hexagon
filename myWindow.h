@@ -1,6 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Hexagon.h"
+#include <cmath>
+#include <iostream>
 
 const int BOARD_SIZE = 9;
 
@@ -71,6 +73,46 @@ public:
         }
     }
 
+    std::vector<myHexagon*> getNeighbours(myHexagon* center)
+    {
+        std::vector<myHexagon*> neighbours = {};
+        for (auto hex : hexagons)
+        {
+            if (hex == center)
+            {
+                continue;
+            }
+            // check distance between center and hex
+            float distance = sqrt(pow(center->getPosition().x - hex->getPosition().x, 2) + pow(center->getPosition().y - hex->getPosition().y, 2));
+            if (distance < HEX_SIZE * 2.2f)
+            {
+                neighbours.push_back(hex);
+            }
+        }
+        return neighbours;
+    }
+
+    void moveHexagon(myHexagon *start, myHexagon *end) {
+        // swap the colors of the hexagons
+        sf::Color temp = start->getFillColor();
+        start->setFillColor(end->getFillColor());
+        end->setFillColor(temp);
+        // check if nearby hexagons are the opposite color
+        // if they are, change their color to the color of the player
+        std::vector<myHexagon*> neighbours = getNeighbours(end);
+        for (auto hex : neighbours)
+        {
+            if(hex->getFillColor() == P1_COLOR && player == Player::Player1)
+            {
+                hex->setFillColor(P2_COLOR);
+            }
+            else if(hex->getFillColor() == P2_COLOR && player == Player::Player2)
+            {
+                hex->setFillColor(P1_COLOR);
+            }
+        }
+    }
+
     void selectHexagon(myHexagon *hexagon)
     {
         for (auto hex : hexagons)
@@ -84,15 +126,13 @@ public:
             // check if the color of hexagon is white
             if (hexagon->getFillColor() == sf::Color::White)
             {
-                // set the color of the hexagon to the color of the selected hexagon
-                hexagon->setFillColor(selectedHexagon->getFillColor());
-                // set the color of the selected hexagon to white
-                selectedHexagon->setFillColor(sf::Color::White);
+                moveHexagon(selectedHexagon, hexagon);
                 // change the player
                 player = (player == Player::Player1) ? Player::Player2 : Player::Player1;
             }
         }
         
+        // set the selected hexagon to the hexagon that was clicked
         selectedHexagon = nullptr;
         // if the player matches the color of the hexagon
         // create an outline around the hexagon
