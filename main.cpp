@@ -33,7 +33,7 @@ void drawBoard(sf::RenderWindow& window) {
             if (i % 2 != 0) {
                 y += HEX_VERTICAL_SPACING / 2.0f;
             }
-            drawHexagon(window, sf::Vector2f(x, y), sf::Color::White);
+            drawHexagon(window, sf::Vector2f(x, y), sf::Color::Red);
 
         }
     }
