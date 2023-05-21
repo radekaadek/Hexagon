@@ -1,52 +1,37 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
+#include <ctime>
 #include "mywindow.h"
-
-void drawBoard(myWindow &window)
-{
-    for (int i = 0; i < BOARD_SIZE; ++i)
-    {
-        for (int j = 0; j < BOARD_SIZE; ++j)
-        {
-            if (((i == 0 || i == BOARD_SIZE - 1) && (j == 0 || j == 1 || j == BOARD_SIZE - 1 || j == BOARD_SIZE - 2)) || ((i == 1 || i == BOARD_SIZE - 2) && (j == 0 || j == BOARD_SIZE - 1 || j == BOARD_SIZE - 2)) || ((i == 2 || i == BOARD_SIZE - 3) && (j == 0 || j == BOARD_SIZE - 1)) || ((i == 3 || i == BOARD_SIZE - 4) && (j == BOARD_SIZE - 1)) || (i == 4 && j == 3) || ((i == 3 || i == 5) && j == 4))
-                continue;
-
-            float x = HEX_HORIZONTAL_SPACING * (i + 1);
-            float y = HEX_VERTICAL_SPACING * (j + 1);
-            if (i % 2 != 0)
-            {
-                y += HEX_VERTICAL_SPACING / 2.0f;
-            }
-            window.drawHexagon(window, sf::Vector2f(x, y), sf::Color::Red);
-        }
-    }
-}
 
 int main()
 {
-    myWindow window(sf::VideoMode(800, 800), "Hexxagon");
-
+    myWindow window(sf::VideoMode({1000, 800}), "Window");
+    sf::Event event;
+    window.innitBoard();
     while (window.isOpen())
     {
-        sf::Event event;
+        window.clear();
+        window.redrawBoard();
+        //        shape.move({0.03,0});
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
             {
                 window.close();
             }
-            if (event.type == sf::Event::MouseButtonPressed)
+            else if (event.type == sf::Event::MouseButtonPressed)
             {
-                // change colors of all hexagons
+                // change the color of the hexagon
                 for (auto hex : window.hexagons)
                 {
-                    hex->setFillColor(sf::Color::Blue);
+                    if (hex->getGlobalBounds().contains({float(event.mouseButton.x), float(event.mouseButton.y)}))
+                    {
+                        hex->setFillColor(sf::Color::Green);
+                    }
                 }
             }
         }
-        window.clear();
-        drawBoard(window);
         window.display();
     }
-
     return 0;
 }

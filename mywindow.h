@@ -10,6 +10,7 @@ const float HEX_HORIZONTAL_SPACING = HEX_RADIUS * 2.0f;
 class myWindow : public sf::RenderWindow
 {
 public:
+    std::vector<sf::CircleShape *> hexagons{};
     using sf::RenderWindow::RenderWindow;
     // destructor
     ~myWindow()
@@ -19,19 +20,36 @@ public:
             delete hex;
         }
     }
-    std::vector<sf::CircleShape*> hexagons;
-    void addHexagon(sf::CircleShape* hex)
+    void innitBoard()
     {
-        hexagons.push_back(hex);
-        drawHexagon(*this, hex->getPosition(), hex->getFillColor());
+        for (int i = 0; i < BOARD_SIZE; ++i)
+        {
+            for (int j = 0; j < BOARD_SIZE; ++j)
+            {
+                if (((i == 0 || i == BOARD_SIZE - 1) && (j == 0 || j == 1 || j == BOARD_SIZE - 1 || j == BOARD_SIZE - 2)) || ((i == 1 || i == BOARD_SIZE - 2) && (j == 0 || j == BOARD_SIZE - 1 || j == BOARD_SIZE - 2)) || ((i == 2 || i == BOARD_SIZE - 3) && (j == 0 || j == BOARD_SIZE - 1)) || ((i == 3 || i == BOARD_SIZE - 4) && (j == BOARD_SIZE - 1)) || (i == 4 && j == 3) || ((i == 3 || i == 5) && j == 4))
+                    continue;
+
+                float x = HEX_HORIZONTAL_SPACING * (i + 1);
+                float y = HEX_VERTICAL_SPACING * (j + 1);
+                if (i % 2 != 0)
+                {
+                    y += HEX_VERTICAL_SPACING / 2.0f;
+                }
+                sf::CircleShape *hexagon = new sf::CircleShape(HEX_SIZE, 6);
+                hexagon->setOrigin(HEX_SIZE, HEX_SIZE + 50.0f);
+                hexagon->setPosition(sf::Vector2f(x, y));
+                hexagon->setFillColor(sf::Color::Red);
+                hexagon->rotate(90.0f);
+                draw(*hexagon);
+                hexagons.push_back(hexagon);
+            }
+        }
     }
-    void drawHexagon(sf::RenderWindow &window, sf::Vector2f position, sf::Color fillColor)
+    void redrawBoard()
     {
-        sf::CircleShape hexagon = sf::CircleShape(HEX_SIZE, 6);
-        hexagon.setOrigin(HEX_SIZE, HEX_SIZE + 50.0f);
-        hexagon.setPosition(position);
-        hexagon.setFillColor(fillColor);
-        hexagon.rotate(90.0f);
-        window.draw(hexagon);
+        for (auto hex : hexagons)
+        {
+            draw(*hex);
+        }
     }
 };
