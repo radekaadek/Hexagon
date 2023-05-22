@@ -2,6 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include "Hexagon.h"
 #include <cmath>
+#include <unordered_map>
+#include <random>
 #include <iostream>
 
 const int BOARD_SIZE = 9;
@@ -13,6 +15,7 @@ const float HEX_HORIZONTAL_SPACING = HEX_RADIUS * 2.0f;
 class myWindow : public sf::RenderWindow
 {
 myHexagon *selectedHexagon = nullptr;
+bool singlePlayer = true;
 public:
     Player player = Player::Player1;
     std::vector<myHexagon *> hexagons{};
@@ -45,12 +48,6 @@ public:
                 {
                     y += HEX_VERTICAL_SPACING / 2.0f;
                 }
-                // myHexagon *hexagon = new myHexagon(HEX_SIZE, 6);
-                // hexagon->setOrigin(HEX_SIZE, HEX_SIZE + 50.0f);
-                // hexagon->setPosition(sf::Vector2f(x, y));
-                // hexagon->setFillColor(sf::Color::White);
-                // hexagon->setOutlineColor(sf::Color (255 , 255 , 0));
-                // hexagon->rotate(90.0f);
                 myHexagon *hexagon = new myHexagon(sf::Vector2f(x, y), sf::Color::White);
                 if ((i == 4 && j == 0) || (i == 0 && j == 6) || (i == BOARD_SIZE - 1 && j == 6))
                 {
@@ -73,7 +70,69 @@ public:
         }
     }
 
-    std::vector<myHexagon*> getNeighbours(myHexagon* center)
+    static bool checkValidMove(std::unordered_map<myHexagon *, std::vector<myHexagon *>> neighbours)
+    {
+        for (auto &hex : neighbours)
+        {
+            if (hex.second.size() == 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    std::unordered_map<myHexagon*, std::vector<myHexagon*>> getAvailableMoves() const
+    {
+        std::unordered_map<myHexagon *, std::vector<myHexagon *>> moves;
+        for (auto hex : hexagons)
+        {
+            if (hex->getFillColor() == P2_COLOR)
+            {
+                std::vector<myHexagon *> neighbour = getNeighbours(hex, 4.4f);
+                // sort out not white hexagons
+                for (auto &hex2 : neighbour)
+                {
+                    if (hex2->getFillColor() == sf::Color::White)
+                    {
+                        moves[hex].push_back(hex2);
+                    }
+                }
+            }
+        }
+        // check if there are any valid moves
+        if (moves.size() == 0)
+        {
+            throw std::runtime_error("No valid moves");
+        }
+        return moves;
+    }
+
+    std::pair<myHexagon*, myHexagon*> getBestMove() const
+    {
+        // map available hexagons to their neighbours
+        std::unordered_map<myHexagon *, std::vector<myHexagon *>> neighbours = getAvailableMoves();
+        // check if there are any valid moves
+        if (neighbours.size() == 0)
+        {
+            throw std::runtime_error("No valid moves");
+        }
+        // random generator
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, neighbours.size() - 1);
+        int random = dis(gen);
+        auto it = neighbours.begin();
+        std::advance(it, random);
+        myHexagon *center = it->first;
+        std::vector<myHexagon *> neighbour = it->second;
+        std::uniform_int_distribution<> dis2(0, neighbour.size() - 1);
+        int random2 = dis2(gen);
+        myHexagon *target = neighbour[random2];
+        return std::make_pair(center, target);
+    }
+
+    std::vector<myHexagon*> getNeighbours(myHexagon* center, float dist = 2.2f) const
     {
         std::vector<myHexagon*> neighbours = {};
         for (auto hex : hexagons)
@@ -83,14 +142,13 @@ public:
                 continue;
             }
             // check distance between center and hex
-            if (distance(center,hex) < HEX_SIZE * 2.2f)
+            if (distance(center,hex) < HEX_SIZE * dist)
             {
                 neighbours.push_back(hex);
             }
         }
         return neighbours;
     }
-
 
     void moveHexagon(myHexagon *start, myHexagon *end) {
         // swap the colors of the hexagons
@@ -113,6 +171,78 @@ public:
             }
         }
     }
+    //How many points does each player have
+    int getPoints(Player player)
+    {
+        int points = 0;
+        for (auto hex : hexagons)
+        {
+            if (hex->getFillColor() == P1_COLOR && player == Player::Player1)
+            {
+                points++;
+            } else if (hex->getFillColor() == P2_COLOR && player == Player::Player2)
+            {
+                points++;
+            }
+        }
+        return points;
+    }
+    // check if the game is over and return the winner
+    std::string checkWinner()
+    {
+        if (getPoints(Player::Player1) + getPoints(Player::Player2) == 58)
+        {
+            if (getPoints(Player::Player1) > getPoints(Player::Player2))
+            {
+                return "Player Red won!";
+            }
+            else if (getPoints(Player::Player1) < getPoints(Player::Player2))
+            {
+                return "Player Blue won !";
+            }
+            else
+            {
+                return "Tie!";
+            }
+        }
+        else if (getPoints(Player::Player1) == 0)
+        {
+            // fill the board with blue
+            for (auto hex : hexagons)
+            {
+                hex->setFillColor(P2_COLOR);
+            }
+            return "Player Blue won!";
+        }
+        else if (getPoints(Player::Player2) == 0)
+        {
+            //fill the board with red
+            for (auto hex : hexagons)
+            {
+                hex->setFillColor(P1_COLOR);
+            }
+            return "Player Blue won !";
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    void botMove() {
+        std::pair<myHexagon*, myHexagon*> move;
+        try {
+            move = getBestMove();
+        }
+        catch(std::runtime_error &e)
+        {
+            player = (player == Player::Player1) ? Player::Player2 : Player::Player1;
+            return;
+        }
+        moveHexagon(move.first, move.second);
+        // change the player
+        player = (player == Player::Player1) ? Player::Player2 : Player::Player1;
+    }
 
     void selectHexagon(myHexagon *hexagon)
     {
@@ -120,16 +250,21 @@ public:
         {
             hex->setOutlineThickness(0);
         }
-
         // check if a hexagon is already selected
         if (selectedHexagon != nullptr)
         {
             // check if the color of hexagon is white
             if (hexagon->getFillColor() == sf::Color::White && distance(selectedHexagon, hexagon) < HEX_SIZE * 4.4f)
             {
+                // move the hexagon
                 moveHexagon(selectedHexagon, hexagon);
                 // change the player
                 player = (player == Player::Player1) ? Player::Player2 : Player::Player1;
+                if (singlePlayer)
+                {
+                    botMove();
+                }
+
             }
         }
         
@@ -142,13 +277,13 @@ public:
         {
             selectedHexagon = hexagon;
             hexagon->setOutlineThickness(5);
+            if (hexagon->getFillColor() == sf::Color::White && distance(selectedHexagon, hexagon) < HEX_SIZE * 4.4f){
+
+            }
+
         }
     }
 
-    myHexagon *getSelectedHexagon() const
-    {
-        return selectedHexagon;
-    }
 
 
 };
