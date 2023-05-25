@@ -27,8 +27,6 @@ public:
         {
             delete hex;
         }
-            delete selectedHexagon;
-
     }
     void innitBoard()
     {
