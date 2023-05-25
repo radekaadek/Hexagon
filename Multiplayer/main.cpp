@@ -5,6 +5,7 @@
 
 int main() {
     myWindow window(sf::VideoMode({1000, 800}), "HEXXAGON");
+    window.setFramerateLimit(120);
     sf::Event event;
     window.innitBoard();
     sf::Font font1;

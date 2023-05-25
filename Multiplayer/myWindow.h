@@ -209,6 +209,23 @@ public:
             }
         }
 
+        // if the best score is < 2, return a random move
+        if (bestScore < 2)
+        {
+            std::vector<myHexagon *> hexagons = {};
+            for (const auto &owned : neighbours)
+            {
+                for (const auto &neighbour : owned.second)
+                {
+                    hexagons.push_back(neighbour);
+                }
+            }
+            std::random_device rd;
+            std::mt19937 g(rd());
+            std::shuffle(hexagons.begin(), hexagons.end(), g);
+            return std::make_pair(hexagons[0], hexagons[1]);
+        }
+
         return std::make_pair(bestHex, bestNeighbour);
     }
 
