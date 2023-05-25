@@ -19,11 +19,11 @@ public:
     // extends the constructor of sf::CircleShape
     myHexagon(const sf::Vector2f &position, const sf::Color &color) : sf::CircleShape(HEX_SIZE, 6)
     {
-        this->setOrigin(HEX_SIZE, HEX_SIZE + 50.0f);
+        this->setOrigin({HEX_SIZE, HEX_SIZE + 50.0f});
         this->setPosition(position);
         this->setFillColor(color);
-        this->setOutlineColor(sf::Color (255 , 255 , 0));
-        this->rotate(90.0f);
+        this->setOutlineColor(sf::Color::Yellow);
+        this->rotate(sf::degrees(90.0f));
     }
 
 };
