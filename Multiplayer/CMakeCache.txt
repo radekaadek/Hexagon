@@ -435,12 +435,6 @@ SFML_BUILD_WINDOW:BOOL=TRUE
 //TRUE to configure extras, FALSE to ignore them
 SFML_CONFIGURE_EXTRAS:BOOL=OFF
 
-//The directory containing a CMake configuration file for SFML.
-SFML_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/SFML
-
-//Path to a file.
-SFML_DOC_DIR:PATH=SFML_DOC_DIR-NOTFOUND
-
 //TRUE to enable precompiled headers for SFML builds -- only supported
 // on Windows/Linux and for static library builds
 SFML_ENABLE_PCH:BOOL=FALSE
@@ -457,7 +451,7 @@ SFML_IS_TOP_LEVEL:STATIC=OFF
 SFML_OPENGL_ES:BOOL=0
 
 //Install directory for SFML's pkg-config .pc files
-SFML_PKGCONFIG_INSTALL_PREFIX:PATH=/usr/local/lib/pkgconfig
+SFML_PKGCONFIG_INSTALL_PREFIX:PATH=/usr/local//pkgconfig
 
 //Value Computed by CMake
 SFML_SOURCE_DIR:STATIC=/home/radekaadek/prg/Hexagon/Multiplayer/_deps/sfml-src
