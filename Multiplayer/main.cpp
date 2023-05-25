@@ -4,6 +4,7 @@
 
 
 int main() {
+    // disable resizing
     myWindow window(sf::VideoMode({1000, 800}), "HEXXAGON");
     window.setFramerateLimit(120);
     sf::Event event;

@@ -170,66 +170,61 @@ public:
         return moves;
     }
 
+    int getPotentialScore(const myHexagon *start, const myHexagon *end) const
+    {
+        int score = distance(start, end) < HEX_SIZE*2.2f ? 1 : 0;
+        // get the neighbours of the potential move
+        std::vector<myHexagon *> potentialNeighbours = getNeighbours(end, 2.2f);
+        // count the number of enemy neighbours
+        for (const auto &potentialNeighbour : potentialNeighbours)
+        {
+            if (potentialNeighbour->getFillColor() != start->getFillColor() &&
+                potentialNeighbour->getFillColor() != sf::Color::White)
+            {
+                score += 2;
+            }
+        }
+        return score;
+    }
+
+    static std::pair<myHexagon*, myHexagon*> getRandomMove(const std::vector<std::pair<myHexagon*, myHexagon*>> moves)
+    {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, moves.size() - 1);
+        return moves[dis(gen)];
+    }
+
     std::pair<myHexagon*, myHexagon*> getBestMove() const
     {
         // map available hexagons to their neighbours
         std::unordered_map<myHexagon *, std::vector<myHexagon *>> neighbours = getAvailableMoves();
-        // get first hexagon
-        myHexagon *bestHex = neighbours.begin()->first;
-        // get first neighbour
-        myHexagon *bestNeighbour = neighbours.begin()->second[0];
-
+        std::vector<std::pair<myHexagon *, myHexagon *>> bestMoves;
 
         int bestScore = 0;
-        // for every available hexagon count the number of enemy neighbours
         for (const auto &owned : neighbours)
         {
             for (const auto &neighbour : owned.second)
             {
-                // get the neighbours of the potential move
+                // cound the score of the potential move and compare it to the best score
                 std::vector<myHexagon *> potentialNeighbours = getNeighbours(neighbour, 2.2f);
-                // if the hexagon is close, add 1 to the score
-                int score = distance(neighbour, owned.first) < HEX_SIZE*2.2f ? 1 : 0;
-                // count the number of enemy neighbours
-                for (const auto &potentialNeighbour : potentialNeighbours)
-                {
-                    if (potentialNeighbour->getFillColor() != owned.first->getFillColor() &&
-                        potentialNeighbour->getFillColor() != sf::Color::White)
-                    {
-                        score += 2;
-                    }
-                }
-                // if the score is better than the current best score, update the best score and the best move
+                int score = getPotentialScore(owned.first, neighbour);
                 if (score > bestScore)
                 {
                     bestScore = score;
-                    bestHex = owned.first;
-                    bestNeighbour = neighbour;
+                    bestMoves = {std::make_pair(owned.first, neighbour)};
                 }
-            }
-        }
-
-        // if the best score is < 2, return a random move
-        if (bestScore < 2)
-        {
-            std::vector<myHexagon *> hexagons = {};
-            for (const auto &owned : neighbours)
-            {
-                for (const auto &neighbour : owned.second)
+                else if (score == bestScore)
                 {
-                    hexagons.push_back(neighbour);
+                    bestMoves.push_back(std::make_pair(owned.first, neighbour));
                 }
             }
-            std::random_device rd;
-            std::mt19937 g(rd());
-            std::shuffle(hexagons.begin(), hexagons.end(), g);
-            return std::make_pair(hexagons[0], hexagons[1]);
         }
 
-        return std::make_pair(bestHex, bestNeighbour);
+        return getRandomMove(bestMoves);
     }
 
-    std::vector<myHexagon*> getNeighbours(myHexagon* center, float dist = 2.2f) const
+    std::vector<myHexagon*> getNeighbours(const myHexagon* center, float dist = 2.2f) const
     {
         std::vector<myHexagon*> neighbours = {};
         for (auto hex : hexagons)

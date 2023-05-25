@@ -63,5 +63,12 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp"
-    }
+    },
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/radekaadek/prg/Hexagon/Multiplayer/CMakeFiles",
+            "binaryPath": "/home/radekaadek/prg/Hexagon/Multiplayer/CMakeFiles/sfml-graphics.dir",
+            "binaryArgs": []
+        }
+    ]
 }
