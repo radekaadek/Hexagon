@@ -1,41 +1,49 @@
+/**
+ * @file main.cpp
+ */
+
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include "myWindow.h"
 
-
+/**
+ * @brief Główny punkt wejścia programu.
+ *
+ * Tworzy okno programu gry hexxagon, ustawia jego parametry, tworzy obiekty klasy myWindow, wywołuje funkcję
+ *
+ * @return Status wyjścia programu.
+ */
 int main() {
-    // disable resizing
     myWindow window(sf::VideoMode({1000, 800}), "HEXXAGON");
     window.setFramerateLimit(120);
-    sf::Event event;
+    sf::Event event{};
     window.innitBoard();
     sf::Font font1;
     if (!font1.loadFromFile("arial.ttf")) {
         std::cout << "Błąd ładowania czcionki." << std::endl;
     }
-    //Text
+    //Text who won
     sf::Text text(font1);
     text.setCharacterSize(24);
     text.setFillColor(sf::Color::White);
     text.setPosition({750, 350});
-    //create a shape
+    //Blue points
     sf::CircleShape shapeBlue(50, 6);
-    sf::CircleShape shapeRed(50, 6);
-    //Blue point
     shapeBlue.setPosition({850, 600});
     shapeBlue.setFillColor(sf::Color::Blue);
     sf::Text text_blue = text;
     text_blue.setCharacterSize(48);
     text_blue.setFillColor(sf::Color::White);
     text_blue.setPosition({800, 620});
-    //Blue point
+    //Red points
+    sf::CircleShape shapeRed(50, 6);
     shapeRed.setPosition({850, 100});
     shapeRed.setFillColor(sf::Color::Red);
     sf::Text text_red(font1);
     text_red.setCharacterSize(48);
     text_red.setFillColor(sf::Color::White);
     text_red.setPosition({800, 120});
-    //Back
+    //Button Back
     sf::RectangleShape back({70, 40});
     back.setFillColor(sf::Color::Black);
     back.setPosition({15, 15});
@@ -63,6 +71,7 @@ int main() {
 
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
+                window.updateHighscores();
                 window.close();
             } else if (event.type == sf::Event::MouseButtonPressed) {
                 for (auto hex: window.hexagons) {
@@ -71,6 +80,7 @@ int main() {
                     }
                 }
                 if (back.getGlobalBounds().contains({float(event.mouseButton.x), float(event.mouseButton.y)})) {
+                    window.updateHighscores();
                     window.clearBoard();
                     window.menu();
                     window.innitBoard();
